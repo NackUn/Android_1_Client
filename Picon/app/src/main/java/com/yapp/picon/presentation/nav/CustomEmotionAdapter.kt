@@ -19,7 +19,7 @@ import kotlinx.android.synthetic.main.dialog_custom_emotion.view.*
 class CustomEmotionAdapter(
     private var items: List<CustomEmotion>,
     private var setRepoItem: (Int, String) -> Unit
-): RecyclerView.Adapter<CustomEmotionAdapter.ItemViewHolder>() {
+) : RecyclerView.Adapter<CustomEmotionAdapter.ItemViewHolder>() {
     private lateinit var context: Context
     private lateinit var dialog: Dialog
 
@@ -38,7 +38,7 @@ class CustomEmotionAdapter(
 
     inner class ItemViewHolder(
         private var itemBinding: CustomEmotionViewBinding
-    ): RecyclerView.ViewHolder(itemBinding.root) {
+    ) : RecyclerView.ViewHolder(itemBinding.root) {
 
         fun onBind(index: Int) {
             itemView.id = index

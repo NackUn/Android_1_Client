@@ -5,7 +5,6 @@ import android.content.Intent
 import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
-import androidx.activity.viewModels
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.get
@@ -21,13 +20,14 @@ import com.yapp.picon.databinding.PostEmotionItemBinding
 import com.yapp.picon.databinding.PostPictureItemBinding
 import com.yapp.picon.presentation.base.BaseActivity
 import kotlinx.android.synthetic.main.post_picture_item.view.*
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 
 class PostActivity : BaseActivity<PostActivityBinding, PostViewModel>(
     R.layout.post_activity
 ) {
 
-    override val vm: PostViewModel by viewModels()
+    override val vm: PostViewModel by viewModel()
 
     private val postPictureClickAdapter =
         object :
@@ -71,6 +71,7 @@ class PostActivity : BaseActivity<PostActivityBinding, PostViewModel>(
 
         //todo reverse geoloaction 으로 받은 주소 ui에 표시
         setLatLng()
+        setContentResolver()
         startAlbum()
     }
 
@@ -84,6 +85,7 @@ class PostActivity : BaseActivity<PostActivityBinding, PostViewModel>(
 
         binding.postTvSave.setOnClickListener {
             //todo 세이브 포스트
+            vm.uploadImage()
         }
     }
 
@@ -94,6 +96,10 @@ class PostActivity : BaseActivity<PostActivityBinding, PostViewModel>(
                 getDoubleExtra("lng", 0.0)
             )
         }
+    }
+
+    private fun setContentResolver() {
+        vm.setContentResolver(contentResolver)
     }
 
     private fun startAlbum() {

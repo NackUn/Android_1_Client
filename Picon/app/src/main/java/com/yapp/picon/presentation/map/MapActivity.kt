@@ -5,7 +5,6 @@ import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
-import androidx.activity.viewModels
 import androidx.core.view.GravityCompat
 import androidx.lifecycle.Observer
 import com.google.android.material.navigation.NavigationView
@@ -23,10 +22,12 @@ import com.yapp.picon.databinding.MapActivityBinding
 import com.yapp.picon.helper.LocationHelper
 import com.yapp.picon.helper.RequestCodeSet
 import com.yapp.picon.presentation.base.BaseMapActivity
+import com.yapp.picon.presentation.login.LoginActivity
 import com.yapp.picon.presentation.nav.NavActivity
 import com.yapp.picon.presentation.nav.NavTypeStringSet
 import com.yapp.picon.presentation.post.PostActivity
 import com.yapp.picon.presentation.search.SearchActivity
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 
 class MapActivity : BaseMapActivity<MapActivityBinding, MapViewModel>(
@@ -34,7 +35,7 @@ class MapActivity : BaseMapActivity<MapActivityBinding, MapViewModel>(
     R.id.map_frame
 ), NavigationView.OnNavigationItemSelectedListener {
 
-    override val vm: MapViewModel by viewModels()
+    override val vm: MapViewModel by viewModel()
 
     private lateinit var naverMap: NaverMap
 
@@ -54,6 +55,8 @@ class MapActivity : BaseMapActivity<MapActivityBinding, MapViewModel>(
 
         setToolBar()
         setOnListeners()
+
+        vm.loadAccessToken()
     }
 
     override fun initViewModel() {
@@ -92,6 +95,9 @@ class MapActivity : BaseMapActivity<MapActivityBinding, MapViewModel>(
 
         binding.mapTvPostFormTempSave.setOnClickListener {
             //todo 위도 경우 만 전송
+            vm.logout()
+            startActivity(Intent(this, LoginActivity::class.java))
+            finish()
         }
 
         binding.mapTvPostFormAddPicture.setOnClickListener {
@@ -202,14 +208,6 @@ class MapActivity : BaseMapActivity<MapActivityBinding, MapViewModel>(
         }
 
         settingOptionToMap()
-    }
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

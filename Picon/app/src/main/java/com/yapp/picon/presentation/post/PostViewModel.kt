@@ -1,18 +1,33 @@
 package com.yapp.picon.presentation.post
 
+import android.content.ContentResolver
 import android.net.Uri
+import android.provider.MediaStore
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.yapp.picon.R
 import com.yapp.picon.data.model.Address
 import com.yapp.picon.data.model.Coordinate
-import com.yapp.picon.data.model.Post
-import com.yapp.picon.data.network.NetworkModule
+import com.yapp.picon.domain.usecase.CreatePostUseCase
+import com.yapp.picon.domain.usecase.LoadAccessTokenUseCase
+import com.yapp.picon.domain.usecase.UploadImageUseCase
 import com.yapp.picon.presentation.base.BaseViewModel
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.asRequestBody
+import java.io.File
 
-class PostViewModel : BaseViewModel() {
+
+class PostViewModel(
+    private val loadAccessTokenUseCase: LoadAccessTokenUseCase,
+    private val uploadImageUseCase: UploadImageUseCase,
+    private val createPostUseCase: CreatePostUseCase
+) : BaseViewModel() {
 
     private val _toastMsg = MutableLiveData<String>()
     val toastMsg: LiveData<String> get() = _toastMsg
@@ -26,6 +41,7 @@ class PostViewModel : BaseViewModel() {
     private val _lat = MutableLiveData<Double>()
     private val _lng = MutableLiveData<Double>()
     private val _selectedEmotion = MutableLiveData<String>()
+    private val _contentResolver = MutableLiveData<ContentResolver>()
 
     init {
         _pictureUris.value = mutableListOf()
@@ -73,6 +89,10 @@ class PostViewModel : BaseViewModel() {
         _lng.value = lng
     }
 
+    fun setContentResolver(contentResolver: ContentResolver) {
+        _contentResolver.value = contentResolver
+    }
+
     fun deletePictureUri(uri: Uri) {
         _pictureUris.value = _pictureUris.value?.minus(uri)
     }
@@ -81,43 +101,98 @@ class PostViewModel : BaseViewModel() {
         _selectedEmotion.value = emtion
     }
 
-    fun requestPost() {
+    private fun getPath(uri: Uri): String? {
+        _contentResolver.value?.let {
+            it.query(uri, arrayOf(MediaStore.Images.Media.DATA), null, null, null)?.run {
+                val columnIndex = getColumnIndexOrThrow(MediaStore.Images.Media.DATA)
+                moveToFirst()
+                val str = getString(columnIndex)
+                close()
+                return str
+            }
+            return null
+        }
+        return null
+    }
+
+    fun uploadImage() {
         viewModelScope.launch {
-            try {
-                NetworkModule.yappApi.requestPost("1").let {
-                    showToast("감정 : ${it.emotion} 메모 : ${it.memo}")
+            loadAccessTokenUseCase().collect { accessToken ->
+                _pictureUris.value?.let {
+                    val arrBody: MutableList<MultipartBody.Part> = ArrayList()
+
+                    for (uri in it) {
+                        getPath(uri)?.let { strUri ->
+                            File(strUri).run {
+
+                                val mapRequestBody = LinkedHashMap<String, RequestBody>()
+                                val requestBody =
+                                    this.asRequestBody("multipart/form-data".toMediaTypeOrNull())
+
+                                mapRequestBody["images\"; filename=\"$name"] = requestBody
+                                val body = MultipartBody.Part.createFormData(
+                                    "fileName",
+                                    name,
+                                    requestBody
+                                )
+
+                                arrBody.add(body)
+                            }
+                        }
+                    }
+                    Log.e("aa12", "이미지 전송시작")
+                    uploadImageUseCase(accessToken, arrBody).let { response ->
+                        Log.e("aa12", "이미지 전송완료")
+                        Log.e("aa12", "${response.string()}")
+//                    if (response.status == 200) {
+                        createPost(
+                            listOf(
+                                "https://news.samsungdisplay.com/wp-content/uploads/2018/08/2.png"
+                            )
+                        )
+//                    } else {
+//                        showToast("이미지를 업로드하는 중 오류가 발생했습니다.")
+//                    }
+                    }
+                    Log.e("aa12", "이미지 전송완료 2")
                 }
-            } catch (e: Exception) {
-                showToast("통신 오류")
             }
         }
     }
 
-    fun createPost() {
+//    fun requestPost() {
+//        viewModelScope.launch {
+//            try {
+//                NetworkModule.yappApi.requestPost("1").let {
+//                    showToast("감정 : ${it.emotion} 메모 : ${it.memo}")
+//                }
+//            } catch (e: Exception) {
+//                showToast("통신 오류")
+//            }
+//        }
+//    }
+
+    private fun createPost(imageUrls: List<String>?) {
         viewModelScope.launch {
-            try {
-                NetworkModule.yappApi.createPost(
-                    Post(
-                        10,
-                        Coordinate(
-                            1.5,
-                            1.5
-                        ),
-                        Address(
-                            "null",
-                            "null",
-                            "null",
-                            "null"
-                        ),
-                        "1",
-                        "1",
-                        null
-                    )
+            loadAccessTokenUseCase().collect { accessToken ->
+                createPostUseCase(
+                    accessToken,
+                    Coordinate(
+                        1.5,
+                        1.5
+                    ),
+                    imageUrls,
+                    Address(
+                        "주소",
+                        "시",
+                        "도",
+                        "구"
+                    ),
+                    memo = "memo",
+                    emotion = "BLUE_GRAY"
                 ).let {
-                    showToast(it.toString())
+                    Log.e("aa12", it.string())
                 }
-            } catch (e: Exception) {
-                showToast("통신 오류")
             }
         }
     }

@@ -10,7 +10,8 @@ import android.widget.Toast
 import androidx.core.app.ActivityCompat
 
 class LocationHelper(private val context: Context) {
-    private val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+    private val locationManager =
+        context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
     private var location: Location? = null
 
     private fun checkPermission(): Boolean {

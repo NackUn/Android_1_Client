@@ -1,16 +1,19 @@
 package com.yapp.picon.presentation.map
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import com.yapp.picon.data.model.Address
-import com.yapp.picon.data.model.Coordinate
-import com.yapp.picon.data.model.Post
-import com.yapp.picon.data.network.NetworkModule
+import com.yapp.picon.domain.usecase.LoadAccessTokenUseCase
+import com.yapp.picon.domain.usecase.LogoutUseCase
 import com.yapp.picon.presentation.base.BaseViewModel
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
-class MapViewModel : BaseViewModel() {
+class MapViewModel(
+    private val loadAccessTokenUseCase: LoadAccessTokenUseCase,
+    private val logoutUseCase: LogoutUseCase
+) : BaseViewModel() {
     private val _isButtonShown = MutableLiveData<Boolean>()
     val isButtonShown: LiveData<Boolean> get() = _isButtonShown
 
@@ -51,44 +54,58 @@ class MapViewModel : BaseViewModel() {
         }
     }
 
-    fun requestPost() {
+    fun loadAccessToken() {
         viewModelScope.launch {
-            try {
-                NetworkModule.yappApi.requestPost("1").let {
-                    showToast("감정 : ${it.emotion} 메모 : ${it.memo}")
-                }
-            } catch (e: Exception) {
-                showToast("통신 오류")
+            loadAccessTokenUseCase().collect {
+                Log.e("aa12", it)
             }
         }
     }
 
-    fun createPost() {
+    fun logout() {
         viewModelScope.launch {
-            try {
-                NetworkModule.yappApi.createPost(
-                    Post(
-                        10,
-                        Coordinate(
-                            1.5,
-                            1.5
-                        ),
-                        Address(
-                            "null",
-                            "null",
-                            "null",
-                            "null"
-                        ),
-                        "1",
-                        "1",
-                        null
-                    )
-                ).let {
-                    showToast(it.toString())
-                }
-            } catch (e: Exception) {
-                showToast("통신 오류")
-            }
+            logoutUseCase()
         }
     }
+
+//    fun requestPost() {
+//        viewModelScope.launch {
+//            try {
+//                NetworkModule.yappApi.requestPost("1").let {
+//                    showToast("감정 : ${it.emotion} 메모 : ${it.memo}")
+//                }
+//            } catch (e: Exception) {
+//                showToast("통신 오류")
+//            }
+//        }
+//    }
+
+//    fun createPost() {
+//        viewModelScope.launch {
+//            try {
+//                NetworkModule.yappApi.createPost(
+//                    Post(
+//                        10,
+//                        Coordinate(
+//                            1.5,
+//                            1.5
+//                        ),
+//                        Address(
+//                            "null",
+//                            "null",
+//                            "null",
+//                            "null"
+//                        ),
+//                        "1",
+//                        "1",
+//                        null
+//                    )
+//                ).let {
+//                    showToast(it.toString())
+//                }
+//            } catch (e: Exception) {
+//                showToast("통신 오류")
+//            }
+//        }
+//    }
 }

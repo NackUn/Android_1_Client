@@ -13,6 +13,7 @@ import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.observe
 import com.yapp.picon.BR
 import com.yapp.picon.R
 import com.yapp.picon.databinding.DialogRemoveAllDataBinding
@@ -20,7 +21,7 @@ import com.yapp.picon.databinding.NavSettingFragmentBinding
 import com.yapp.picon.presentation.base.BaseFragment
 import com.yapp.picon.presentation.nav.repository.SettingRepository
 
-class SettingFragment: BaseFragment<NavSettingFragmentBinding, NavViewModel>(
+class SettingFragment : BaseFragment<NavSettingFragmentBinding, NavViewModel>(
     R.layout.nav_setting_fragment
 ) {
     private lateinit var dialog: AlertDialog

@@ -28,4 +28,13 @@ val useCaseModule = module {
     single {
         LoadAccessTokenUseCase(get())
     }
+    single {
+        LogoutUseCase(get())
+    }
+    single {
+        UploadImageUseCase(get())
+    }
+    single {
+        CreatePostUseCase(get())
+    }
 }

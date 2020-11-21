@@ -30,7 +30,8 @@ abstract class BaseActivity<T : ViewDataBinding, VM : ViewModel>(
     }
 
     protected open fun showToast(msg: String) {
-        val customToast = layoutInflater.inflate(R.layout.custom_toast, findViewById(R.id.custom_toast))
+        val customToast =
+            layoutInflater.inflate(R.layout.custom_toast, findViewById(R.id.custom_toast))
         customToast.findViewById<TextView>(R.id.custom_toast_tv).text = msg
         Toast(this).run {
             setGravity(Gravity.BOTTOM, 0, 200)

@@ -15,6 +15,7 @@ import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.observe
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.yapp.picon.BR
 import com.yapp.picon.R
@@ -22,7 +23,7 @@ import com.yapp.picon.databinding.DialogCustomFinishBinding
 import com.yapp.picon.databinding.NavCustomEmotionFragmentBinding
 import com.yapp.picon.presentation.base.BaseFragment
 
-class CustomEmotionFragment: BaseFragment<NavCustomEmotionFragmentBinding, NavViewModel>(
+class CustomEmotionFragment : BaseFragment<NavCustomEmotionFragmentBinding, NavViewModel>(
     R.layout.nav_custom_emotion_fragment
 ) {
     private lateinit var customAdapter: CustomEmotionAdapter
@@ -72,40 +73,40 @@ class CustomEmotionFragment: BaseFragment<NavCustomEmotionFragmentBinding, NavVi
     }
 
     private fun observeFinishButton() {
-        vm.customRepository.customFinishFlag.observe(this, {
+        vm.customRepository.customFinishFlag.observe(this) {
             if (it) {
                 finishDialog.show()
                 setDialogSize()
             }
-        })
+        }
     }
 
     private fun observeFinishDialogCancelButton() {
-        vm.customRepository.dialogFinishCancelFlag.observe(this, {
+        vm.customRepository.dialogFinishCancelFlag.observe(this) {
             if (it) {
                 finishDialog.dismiss()
                 vm.customRepository.initFinishDialogFlag()
                 vm.customRepository.changeCustomFinishFlag()
             }
-        })
+        }
     }
 
     private fun observeFinishDialogConfirmButton() {
-        vm.customRepository.dialogFinishConfirmFlag.observe(this, {
+        vm.customRepository.dialogFinishConfirmFlag.observe(this) {
             if (it) {
                 finishDialog.dismiss()
                 vm.changeFinishFlag()
             }
-        })
+        }
     }
 
     private fun observeSaveButton() {
-        vm.customRepository.customSaveFlag.observe(this, {
+        vm.customRepository.customSaveFlag.observe(this) {
             if (it) {
                 // TODO("custom repository의 items를 서버에 저장")
                 Toast.makeText(context, "저장되었습니다.", Toast.LENGTH_SHORT).show()
             }
-        })
+        }
     }
 
     private fun setDialogSize() {
@@ -118,7 +119,8 @@ class CustomEmotionFragment: BaseFragment<NavCustomEmotionFragmentBinding, NavVi
     }
 
     private fun setRecyclerView() {
-        customAdapter = CustomEmotionAdapter(vm.customRepository.items.value ?: listOf()
+        customAdapter = CustomEmotionAdapter(
+            vm.customRepository.items.value ?: listOf()
         ) { index: Int, value: String ->
             vm.customRepository.setItems(index, value)
         }
